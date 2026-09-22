@@ -1,0 +1,4 @@
+'use client';
+import Image from 'next/image'; import Link from 'next/link'; import {useState} from 'react';
+const links=[['la-logia','La Logia'],['historia','Historia'],['masoneria','Masonería'],['trabajo','Nuestro trabajo'],['biblioteca','Biblioteca'],['conocernos','¿Quieres conocernos?'],['faq','FAQ'],['contacto','Contacto']];
+export default function Header(){const [open,setOpen]=useState(false);return <header className="header wrap"><Link className="brand" href="/" onClick={()=>setOpen(false)}><Image src="/Logo_Regeneracion_132.png" alt="Emblema de Regeneración Nº 132" width={46} height={46}/><span>REGENERACIÓN<br/>Nº 132</span></Link><button className="menu-toggle" aria-label={open?'Cerrar menú':'Abrir menú'} aria-expanded={open} onClick={()=>setOpen(!open)}>☰</button><nav className={open?'nav nav-open':'nav'} aria-label="Navegación principal">{links.map(([id,label])=><Link key={id} href={`/#${id}`} onClick={()=>setOpen(false)}>{label}</Link>)}</nav></header>}
