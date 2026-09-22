@@ -1,0 +1,1 @@
+import type {MetadataRoute} from 'next'; export default function sitemap():MetadataRoute.Sitemap{return ['','regeneracion','historia','masoneria','trabajo','biblioteca','conocernos','faq','contacto'].map(path=>({url:`https://regeneracion132.es/${path}`,lastModified:new Date()}))}
