@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { languageAlternates, LOCALES, localizedPath } from './lib/i18n';
+import { allPublications } from './lib/library';
 
 const ORIGIN = 'https://regeneracion132.es';
 const absoluteAlternates = (page: '' | 'contacto' = '') => ({
@@ -9,7 +10,7 @@ const absoluteAlternates = (page: '' | 'contacto' = '') => ({
 });
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return LOCALES.flatMap(locale => [
+  const pages = LOCALES.flatMap(locale => [
     {
       url: `${ORIGIN}${localizedPath(locale)}`,
       lastModified: new Date(),
@@ -21,4 +22,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       alternates: absoluteAlternates('contacto'),
     },
   ]);
+  const articles = allPublications().map(item => ({ url: `${ORIGIN}/${item.language}/biblioteca/${item.slug}`, lastModified: new Date(item.date) }));
+  return [...pages, ...LOCALES.map(locale => ({ url: `${ORIGIN}/${locale}/biblioteca`, lastModified: new Date() })), ...articles];
 }
