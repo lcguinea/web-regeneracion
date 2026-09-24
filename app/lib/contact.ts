@@ -1,6 +1,8 @@
-export const REASONS = ['Quiero conocer la Masonería', 'Soy masón y quiero visitar', 'Consulta general'] as const;
+export const REASONS = ['conocer', 'visitar', 'general'] as const;
+export type ContactReason = (typeof REASONS)[number];
 export type ContactInput = { reason: string; name: string; email: string; phone: string; city: string; message: string };
-export type FieldErrors = Partial<Record<keyof ContactInput, string>>;
+export type ValidationError = { code: 'required' | 'invalid' | 'max'; max?: number };
+export type FieldErrors = Partial<Record<keyof ContactInput, ValidationError>>;
 export const LIMITS = { name: 100, email: 254, phone: 30, city: 100, message: 2000 } as const;
 
 const clean = (v: unknown, max: number, multiline = false) => {
@@ -24,15 +26,15 @@ export function normalize(raw: Record<string, unknown>): ContactInput {
 
 export function validate(v: ContactInput): FieldErrors {
   const e: FieldErrors = {};
-  if (!(REASONS as readonly string[]).includes(v.reason)) e.reason = 'Selecciona un motivo de contacto.';
-  if (!v.name) e.name = 'Indica tu nombre.';
-  else if (v.name.length > LIMITS.name) e.name = `Máximo ${LIMITS.name} caracteres.`;
-  if (!v.email) e.email = 'Indica tu correo electrónico.';
-  else if (v.email.length > LIMITS.email || !/^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]{2,}$/.test(v.email)) e.email = 'Introduce un correo electrónico válido.';
-  if (!v.phone) e.phone = 'Indica tu teléfono.';
-  else if (v.phone.length > LIMITS.phone || !/^\+?[0-9 ().-]{6,}$/.test(v.phone) || (v.phone.match(/\d/g) || []).length < 6) e.phone = 'Introduce un teléfono válido.';
-  if (!v.city) e.city = 'Indica tu ciudad de residencia.';
-  else if (v.city.length > LIMITS.city) e.city = `Máximo ${LIMITS.city} caracteres.`;
-  if (v.message.length > LIMITS.message) e.message = `Máximo ${LIMITS.message} caracteres.`;
+  if (!(REASONS as readonly string[]).includes(v.reason)) e.reason = { code: 'invalid' };
+  if (!v.name) e.name = { code: 'required' };
+  else if (v.name.length > LIMITS.name) e.name = { code: 'max', max: LIMITS.name };
+  if (!v.email) e.email = { code: 'required' };
+  else if (v.email.length > LIMITS.email || !/^[^\s@<>()]+@[^\s@<>()]+\.[^\s@<>()]{2,}$/.test(v.email)) e.email = { code: 'invalid' };
+  if (!v.phone) e.phone = { code: 'required' };
+  else if (v.phone.length > LIMITS.phone || !/^\+?[0-9 ().-]{6,}$/.test(v.phone) || (v.phone.match(/\d/g) || []).length < 6) e.phone = { code: 'invalid' };
+  if (!v.city) e.city = { code: 'required' };
+  else if (v.city.length > LIMITS.city) e.city = { code: 'max', max: LIMITS.city };
+  if (v.message.length > LIMITS.message) e.message = { code: 'max', max: LIMITS.message };
   return e;
 }

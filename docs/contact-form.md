@@ -1,9 +1,13 @@
 # Formulario de contacto: arquitectura y despliegue
 
 ## Flujo
-`app/contacto/page.tsx` (cliente) valida con `app/lib/contact.ts` y hace POST JSON a `/api/contact`
+`app/[lang]/contacto/ContactForm.tsx` (cliente) valida con `app/lib/contact.ts` y hace POST JSON a `/api/contact`
 (`app/api/contact/route.ts`, Node runtime, solo servidor). El servidor revalida con las mismas reglas,
 normaliza y envía un correo vía API REST de Resend (`fetch`, sin dependencias nuevas). Sin base de datos.
+
+Los motivos viajan como códigos ASCII en lista blanca y los errores como códigos traducibles. El servidor
+convierte el motivo a una etiqueta española controlada para el correo y acepta únicamente los cinco locales
+declarados en `app/lib/i18n.ts` (con español como fallback).
 
 ## Protecciones
 Honeypot `website`, tiempo mínimo de rellenado (2 s), comprobación de Origin, límite de tamaño (16 KB),
