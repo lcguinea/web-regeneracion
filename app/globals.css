@@ -359,7 +359,7 @@ a { color: inherit; text-decoration: none }
 .form-error { padding: var(--space-4) var(--space-5); background: var(--color-error-bg); border-left: var(--border-status) var(--color-error); line-height: var(--text-leading-normal); color: var(--color-error-text) }
 .form [aria-invalid=true] { border-color: var(--color-error); box-shadow: inset var(--border-status-width) 0 0 var(--color-error) }
 
-@media (max-width: 800px) {
+@media (max-width: 920px) {
   .nav { display: none; position: absolute; top: var(--space-header); left: 0; right: 0; background: var(--color-stone); padding: var(--space-nav-stack) var(--space-gutter); border-bottom: var(--border-hairline); box-shadow: var(--shadow-menu); flex-direction: column; align-items: flex-start; gap: var(--space-nav-stack) }
   .nav.nav-open { display: flex }
   .nav a { font-size: var(--text-sm); color: var(--color-text) }

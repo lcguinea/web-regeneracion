@@ -402,3 +402,115 @@ hubo render.
   en fr/it.
 - La tipografía depende de las fuentes instaladas en cada equipo (ver
   «Tipografía»).
+
+## Auditoría visual en navegador (25-09-2026)
+
+Auditoría real ejecutada sobre `HEAD` `6917955` (con una corrección de CSS
+posterior, ver abajo) usando el servidor gobernado de Argos
+(`$ARGOS_SERVIDOR_LOCAL servir`, build de producción `npm run build`) y
+`argos_navegador` (Chromium headless real). Evidencia fuera de git en
+`estado/auditoria-visual/render/` (capturas PNG y snapshots de accesibilidad
+con `box=x,y,width,height`). Esto sustituye el intento bloqueado anterior:
+la limitación «`$ARGOS_SERVIDOR_LOCAL` no disponible» queda superada, Argos
+sirvió la app de forma real en `http://127.0.0.1:PUERTO` y el navegador
+inspeccionó el DOM servido.
+
+### Vistas auditadas
+
+- `/es` completa a 1440, 390 y 360 px.
+- Menú móvil (`☰`) a 390 y 360 px.
+- `/es/contacto` a 1440 y 390 px, incluyendo foco por teclado y envío del
+  formulario vacío (validación) sin introducir datos reales.
+- `/es/biblioteca` a 1440 y 390 px.
+- Portadas `/va`, `/en`, `/fr`, `/it` a 1440 y 390 px.
+- Navegación de escritorio de `/fr` e `/it` a 801, 900, 1024 y 1100 px, y de
+  `/es` a 801 px.
+
+En todas las páginas se comparó `scrollWidth`/`clientWidth` del contenedor
+raíz (vía el `box` de `browser_snapshot`, que coincidía siempre con el ancho
+del viewport salvo el defecto descrito abajo) y se revisaron solapamientos,
+cortes de línea, jerarquía, spacing, botones, cards, divisores, hover/focus,
+imágenes y footer.
+
+### Resultado general
+
+El look & feel coincide con el objetivo: fondo marfil/piedra, tinta casi
+negra en el hero y footer, oro envejecido moderado solo en acentos (línea
+del eyebrow, marco de imagen, foco), tipografía serif para titulares y sans
+para UI. No hay estética corporativa genérica ni clichés esotéricos visibles
+en ninguna de las vistas auditadas. Jerarquía, spacing entre secciones,
+cards con regla superior dorada y el glifo `∴` discreto en el hero se ven
+correctamente en 1440, 390 y 360 px, sin overflow.
+
+### Defecto encontrado y corregido
+
+- **Nav de escritorio desbordaba entre 801 y ~903 px en francés.** A 801 px
+  y 900 px la fila del header (marca + enlaces + selector de idioma) excedía
+  el ancho del contenedor: el selector de idioma quedaba parcialmente fuera
+  del viewport (el enlace «IT» se salía del borde derecho) y el rótulo de
+  marca «REGENERACIÓN Nº 132» se partía en 3 líneas rompiendo la palabra
+  por `overflow-wrap: anywhere` en `.brand span`. Se reprodujo también en
+  `/it` a 801 px (mismo wrap roto de la marca, aunque el nav en sí cabía) y
+  no aparecía en `/es` (etiquetas más cortas) ni en ninguna a 1024 o 1100 px.
+  Evidencia antes: `estado/auditoria-visual/render/page-2026-09-25T13-13-32-263Z.png`
+  (fr @801), `...13-13-41-874Z.png` (fr @900), `...13-13-59-382Z.png`
+  (it @801).
+  - **Causa:** el único punto de quiebre a menú móvil era
+    `@media (max-width: 800px)`, insuficiente para los rótulos más largos de
+    fr/it entre 801 y ~910 px.
+  - **Corrección:** en `app/globals.css` se sube ese punto de quiebre de
+    `800px` a `920px` (mismo bloque de reglas, sin nuevos tokens ni
+    estructura). Por debajo de 920 px el header pasa a marca + botón `☰`,
+    con espacio de sobra para el rótulo en dos líneas; a 1024 px y 1100 px
+    el nav de escritorio sigue apareciendo igual que antes, sin cambios.
+  - Evidencia después (misma vista, mismo defecto, ya resuelto):
+    `estado/auditoria-visual/render/page-2026-09-25T13-16-08-598Z.png`
+    (fr @801, menú móvil), `...13-16-30-871Z.png` (fr @900, menú móvil),
+    `...13-16-36-798Z.png` (fr @1024, nav de escritorio intacto),
+    `...13-16-41-678Z.png` (it @1100, nav de escritorio intacto),
+    `...13-16-48-428Z.png` (es @801, menú móvil).
+  - Verificado sin regresión: `/es`, `/en`, `/va` a 390 px y menú móvil a
+    390/360 px siguen iguales tras el cambio (capturas correspondientes en
+    la misma carpeta).
+
+No se encontraron más defectos objetivos de renderizado en las vistas
+auditadas (hero, imágenes con marco doble, formulario de contacto —labels,
+campos de 48 px, foco visible, mensajes de error por campo—, chips de
+categoría de la biblioteca, footer) que justificasen tocar
+`app/globals.css` más allá de este punto de quiebre.
+
+### Formulario de contacto: foco y validación
+
+A 1440 px, `Tab` desde la carga sitúa el foco en el enlace del logo con un
+contorno oscuro visible. Al enviar el formulario vacío (sin escribir ningún
+dato) aparece un aviso «Revisa los campos marcados.», cada campo obligatorio
+se marca en rojo con su mensaje (`Selecciona un motivo de contacto.`,
+`Indica tu nombre.`, etc.) y el foco pasa al primer campo inválido con
+contorno visible; no se realizó ningún envío real de datos. El mismo
+formulario a 390 px no presenta overflow ni corte de campos.
+
+### Pruebas y build
+
+- `npm run build`: exit 0, compila y genera 19 páginas estáticas, antes y
+  después de la corrección de CSS.
+- `python3 tests/test_i18n.py`: `OK i18n`.
+- `git diff --check`: sin avisos de espacios en blanco.
+- Las cinco rutas (`/es`, `/va`, `/en`, `/fr`, `/it`) se cargaron y su
+  `<html lang>`/`hreflang` corresponden al selector de idioma visitado en
+  cada snapshot (confirmado por el `lang` de los enlaces del selector en el
+  DOM).
+
+### Limitaciones que siguen pendientes
+
+- No hay ningún artículo publicado en `content/biblioteca/`, así que la
+  vista de artículo de Biblioteca sigue sin poder auditarse.
+- No se probó el estado de éxito ni el error de red del formulario de
+  contacto (habría requerido enviar datos o forzar un fallo del servicio de
+  correo), ni el comportamiento de zoom al enfocar en iOS real (el
+  navegador de Argos es Chromium de escritorio headless).
+- No se repitió el contraste con una herramienta automática (axe/Lighthouse)
+  sobre el render final; sigue basado en el cálculo de
+  `estado/auditoria-visual/contraste.py` de la iteración anterior.
+- La tipografía depende de las fuentes instaladas en el entorno de
+  renderizado; no se ha comparado contra un entorno con las fuentes web
+  finales si difieren de las del sistema.
