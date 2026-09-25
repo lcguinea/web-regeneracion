@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Header from '../Header';
 import { getDictionary, isLocale, LOCALES, LOCALE_CONFIG } from '../lib/i18n';
+import { withBasePath } from '../lib/basePath';
 import '../globals.css';
 
 export const dynamicParams = false;
@@ -20,7 +21,7 @@ export default function LocaleLayout({ children, params }: { children: React.Rea
       <footer className="footer">
         <div className="wrap">
           <div className="brand">
-            <Image src="/Logo_Regeneracion_132.png" alt={dictionary.media.logoAlt} width={46} height={46}/>
+            <Image src={withBasePath('/Logo_Regeneracion_132.png')} alt={dictionary.media.logoAlt} width={46} height={46}/>
             <span>{dictionary.site.footerName}</span>
           </div>
           <small>{dictionary.footer.location}<br/>{dictionary.footer.disclaimer}</small>

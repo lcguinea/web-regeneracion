@@ -41,6 +41,12 @@ export default function ContactForm({ lang, content }: { lang: Locale; content: 
       setTimeout(() => focusFirst(form, fieldErrors), 0);
       return;
     }
+    if (process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true') {
+      setStatus('error');
+      setMessage(content.errors.unavailable);
+      setTimeout(() => alertRef.current?.focus(), 0);
+      return;
+    }
     busy.current = true;
     setStatus('sending');
     setMessage('');

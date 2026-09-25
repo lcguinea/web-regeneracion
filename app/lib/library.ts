@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Locale } from './i18n';
-
-export const CATEGORIES = ['Filosofia', 'Historia', 'Simbolismo', 'Arte', 'Sociedad', 'Masoneria'] as const;
-export type Category = (typeof CATEGORIES)[number];
+import { CATEGORIES, type Category } from './categories';
+export { CATEGORIES, type Category };
 export type Publication = { slug: string; title: string; language: Locale; category: Category; date: string; author?: string; excerpt: string; body: string; status: 'published' | 'draft'; translationGroup?: string };
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'biblioteca');

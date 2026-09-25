@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { LOCALES, LOCALE_CONFIG, type Dictionary, type Locale } from './lib/i18n';
+import { withBasePath } from './lib/basePath';
 
 type HeaderProps = { lang: Locale; dictionary: Dictionary };
 
@@ -15,7 +16,8 @@ export default function Header({ lang, dictionary }: HeaderProps) {
 
   const pathFor = (locale: Locale) => {
     const localized = pathname.replace(/^\/(es|va|en|fr|it)(?=\/|$)/, `/${locale}`);
-    return localized === pathname && !pathname.startsWith(`/${lang}`) ? `/${locale}` : localized;
+    const path = localized === pathname && !pathname.startsWith(`/${lang}`) ? `/${locale}` : localized;
+    return withBasePath(path);
   };
 
   const preserveHash = (event: React.MouseEvent<HTMLAnchorElement>) => {
@@ -25,7 +27,7 @@ export default function Header({ lang, dictionary }: HeaderProps) {
 
   return <header className="header wrap">
     <Link className="brand" href={`/${lang}`} onClick={() => setOpen(false)}>
-      <Image src="/Logo_Regeneracion_132.png" alt={dictionary.media.logoAlt} width={46} height={46}/>
+      <Image src={withBasePath('/Logo_Regeneracion_132.png')} alt={dictionary.media.logoAlt} width={46} height={46}/>
       <span>{dictionary.site.headerName}<br/>{dictionary.site.headerNumber}</span>
     </Link>
     <button className="menu-toggle" aria-label={open ? dictionary.navigation.closeMenu : dictionary.navigation.openMenu} aria-expanded={open} onClick={() => setOpen(!open)}>☰</button>
